@@ -38,8 +38,10 @@ jobs:
       - name: Validate changed dictionary files
         env:
           BASE_REF: ${{ inputs.base-ref }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
           PUSH_BEFORE: ${{ github.event.before }}
         run: |
           base="$BASE_REF"
+          if [ -z "$base" ]; then base="$PR_BASE"; fi
           if [ -z "$base" ]; then base="$PUSH_BEFORE"; fi
           python .ci/scripts/validate_dict.py --base "$base"

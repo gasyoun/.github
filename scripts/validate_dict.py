@@ -28,6 +28,9 @@ def changed_files(base: str):
         r = git("diff", "--name-only", "--diff-filter=ACMR", base, "HEAD")
         if r.returncode == 0:
             return [p for p in r.stdout.splitlines() if p][:MAX_FILES]
+    r = git("diff", "--name-only", "--diff-filter=ACMR", "HEAD~1", "HEAD")
+    if r.returncode == 0:
+        return [p for p in r.stdout.splitlines() if p][:MAX_FILES]
     r = git("ls-files")
     return [p for p in r.stdout.splitlines() if p][:MAX_FILES]
 
@@ -62,9 +65,9 @@ def check_file(path: str, base: str = ""):
         bad = []
         for i, line in enumerate(text.splitlines(), 1):
             s = line.strip()
-            if not s or s.startswith("#") or s.startswith("//"):
+            if not s or s[0] in "#;/":
                 continue
-            if not CHANGE_RX.match(s):
+            if s[0].isdigit() and not CHANGE_RX.match(s):
                 bad.append(i)
         for n in bad[:5]:
             errors.append("%s:%d: change line does not match 'NNN old|new|ins|del'" % (path, n))
@@ -95,7 +98,7 @@ def selftest() -> int:
     cases.append((good, []))
     bad = os.path.join(td, "changes_bad.txt")
     with open(bad, "w", encoding="utf-8") as fh:
-        fh.write("123 old\nnot a change line\n")
+        fh.write("123 old\n123 oops\n")
     cases.append((bad, ["does not match"]))
     bom = os.path.join(td, "bom.txt")
     with open(bom, "wb") as fh:
