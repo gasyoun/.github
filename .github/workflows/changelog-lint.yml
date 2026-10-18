@@ -1,0 +1,24 @@
+name: changelog-lint
+
+# Reusable: refuses a CHANGELOG.md that repeats the same bullet inside one
+# release section (the "one edit fanned across 52 sections" failure class).
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository_owner }}/.github
+          path: .ci
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: python .ci/scripts/changelog_guard.py

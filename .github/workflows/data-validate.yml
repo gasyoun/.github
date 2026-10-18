@@ -1,0 +1,45 @@
+name: data-validate
+
+# Reusable gate for dictionary repositories. Checks only files changed in the
+# push/PR: encoding, change-file format, <L> headword sanity, and a
+# catastrophic headword-count drop. Caller:
+#   jobs:
+#     validate:
+#       uses: OWNER/.github/.github/workflows/data-validate.yml@main
+
+on:
+  workflow_call:
+    inputs:
+      base-ref:
+        description: Git ref to diff against; empty uses the push base
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository_owner }}/.github
+          path: .ci
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Validator self-test (must pass before the gate is trusted)
+        run: python .ci/scripts/validate_dict.py --selftest
+      - name: Validate changed dictionary files
+        env:
+          BASE_REF: ${{ inputs.base-ref }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          base="$BASE_REF"
+          if [ -z "$base" ]; then base="$PUSH_BEFORE"; fi
+          python .ci/scripts/validate_dict.py --base "$base"

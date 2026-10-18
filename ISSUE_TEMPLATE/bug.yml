@@ -1,0 +1,32 @@
+name: Bug
+description: Something is broken in a repository, workflow, or deployed site
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: Repository, page or workflow
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: Actual behaviour, with the exact error text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Steps, command, or URL; say if it is intermittent
+    validations:
+      required: true

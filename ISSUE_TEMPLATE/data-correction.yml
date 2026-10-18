@@ -1,0 +1,43 @@
+name: Data correction
+description: A wrong reading, typo, or missing entry in a dictionary
+title: "[correction] "
+labels: ["data"]
+body:
+  - type: input
+    id: dictionary
+    attributes:
+      label: Dictionary
+      placeholder: MW, PWG, AP90, MWS…
+    validations:
+      required: true
+  - type: input
+    id: headword
+    attributes:
+      label: Headword
+      description: In the dictionary's own transliteration, with the line number if you have it
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current reading
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed reading
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Edition, page, or parallel dictionary; a screenshot helps
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I understand corrections are applied through the correction queue, not by editing the view repository.
+          required: true

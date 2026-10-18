@@ -1,0 +1,39 @@
+name: selftest
+
+# Proves the gate fails closed: the negative fixtures MUST return exit 1.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Internal selftest
+        run: python scripts/validate_dict.py --selftest
+      - name: Positive fixture passes
+        run: python scripts/validate_dict.py tests/fixtures/changes_good.txt
+      - name: Malformed change line fails closed
+        run: |
+          if python scripts/validate_dict.py tests/fixtures/changes_bad.txt; then
+            echo "::error::gate failed open on a malformed change line"
+            exit 1
+          fi
+      - name: BOM fails closed
+        run: |
+          if python scripts/validate_dict.py tests/fixtures/changes_bom.txt; then
+            echo "::error::gate failed open on a UTF-8 BOM"
+            exit 1
+          fi
+      - name: Changelog guard selftest
+        run: python scripts/changelog_guard.py --selftest
