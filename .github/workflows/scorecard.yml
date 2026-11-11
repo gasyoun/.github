@@ -1,0 +1,54 @@
+name: scorecard
+
+# OSSF Scorecard, weekly, results published to the OpenSSF dashboard so the
+# repo badge (https://api.scorecard.dev/projects/github.com/<owner>/<repo>/badge)
+# goes live. Reusable half of E031 wave 4 (H8046): a repo adopts with
+#
+#   jobs:
+#     scorecard:
+#       uses: gasyoun/.github/.github/workflows/scorecard.yml@main
+#       permissions:
+#         contents: read
+#         security-events: write
+#         id-token: write        # OIDC — publish_results signs the result, no PAT
+#
+# Pins mirror ossf/scorecard's own scorecard-analysis.yml (read 11-11-2026).
+# publish_results needs id-token: write (OIDC), never a PAT (scorecard-action README).
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  security-events: write
+  id-token: write
+
+jobs:
+  scorecard:
+    name: OSSF Scorecard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+          fail_on_publish_error: true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif
