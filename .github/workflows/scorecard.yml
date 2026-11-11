@@ -13,20 +13,24 @@ name: scorecard
 #         id-token: write        # OIDC — publish_results signs the result, no PAT
 #
 # Pins mirror ossf/scorecard's own scorecard-analysis.yml (read 11-11-2026).
-# publish_results needs id-token: write (OIDC), never a PAT (scorecard-action README).
+# Permission shape obeys scorecard-action#workflow-restrictions: NO workflow-
+# level write permissions (a first run was REJECTED 400 "global perm is set to
+# write" with security-events at top level); the writes live on this job only.
 
 on:
   workflow_call:
 
 permissions:
   contents: read
-  security-events: write
-  id-token: write
 
 jobs:
   scorecard:
     name: OSSF Scorecard
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write    # code-scanning upload + publish verification
+      id-token: write           # OIDC for publish_results — job-level only
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
